@@ -6,13 +6,22 @@
   "scripts": {
     "dev": "vite",
     "start": "node backend/src/server.js",
+    "postinstall": "npm --prefix backend install",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "framer-motion": "^13.2.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.41.0",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^8.10.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3"
