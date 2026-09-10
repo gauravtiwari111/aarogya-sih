@@ -1,0 +1,81 @@
+@import 'tailwindcss';
+@config '../tailwind.config.ts';
+
+@theme {
+  --font-sans: Inter, 'Noto Sans Devanagari', system-ui, sans-serif;
+  --color-primary: #0f6c7a;
+  --color-primary-dark: #0a4f5a;
+  --color-primary-light: #e7f4f6;
+  --color-navy: #12263a;
+  --color-ink: #1c2e3a;
+  --color-muted: #5b6b76;
+  --color-page: #eef4f7;
+  --color-card: #ffffff;
+  --color-line: #d5e2e8;
+  --color-good: #1f7a4d;
+  --color-warn: #b45309;
+  --color-alert: #b42318;
+}
+
+html {
+  font-size: 16px;
+}
+
+html[data-font='small'] {
+  font-size: 14px;
+}
+
+html[data-font='large'] {
+  font-size: 18.5px;
+}
+
+html[data-contrast='high'] {
+  --color-page: #ffffff;
+  --color-card: #ffffff;
+  --color-ink: #000000;
+  --color-muted: #111111;
+  --color-line: #111111;
+  --color-primary: #00515c;
+}
+
+html[data-contrast='high'] body {
+  background: #fff;
+  color: #000;
+}
+
+html[data-motion='reduce'] *,
+html[data-motion='reduce'] *::before,
+html[data-motion='reduce'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+:focus-visible {
+  outline: 3px solid #0f6c7a;
+  outline-offset: 2px;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  min-height: 44px;
+}
+
+::selection {
+  background: #b9e3ea;
+}
