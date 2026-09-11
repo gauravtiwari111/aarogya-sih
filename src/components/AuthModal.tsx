@@ -217,7 +217,7 @@ export function AuthModal({ isOpen, onClose, initialRole = 'patient', onSuccess 
         {isRegister ? (
           <>
             <div>
-              <Input label="Full Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Ankit Tiwari" required />
+              <Input label="Full Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. XYZ" required />
             </div>
 
             <div>
