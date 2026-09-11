@@ -65,7 +65,7 @@ const defaultSession: SessionState = {
   documents: [],
   timeline: [],
   history: null,
-  selectedPatientId: 'PTH100125',
+  selectedPatientId: '',
   verified: false,
   submitted: false,
 }

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useApp } from '../hooks/AppContext'
 import type { WorkflowStep } from '../types'
 
@@ -42,9 +42,9 @@ export function RequireStep({ step, children }: { step: WorkflowStep; children: 
             >
               + Start New Patient Intake (New ID)
             </button>
-            <a href="/" className="text-xs font-medium text-muted hover:underline pt-1 block">
+            <Link to="/" className="block pt-1 text-xs font-medium text-muted hover:underline">
               ← Return to Home Page
-            </a>
+            </Link>
           </div>
         </div>
       </div>

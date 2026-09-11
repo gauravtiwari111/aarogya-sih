@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Camera, FileUp, FlaskConical } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
@@ -57,20 +58,25 @@ export function DocumentsPage() {
         <h1 className="text-2xl font-bold">{tr('addDocs')}</h1>
         <p className="text-muted">{tr('addDocsSub')}</p>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Button variant="outline" onClick={() => void add('prescription')}>
-            <Camera size={18} /> {tr('scanRx')}
-          </Button>
-          <Button variant="outline" onClick={() => void add('lab')}>
-            <FlaskConical size={18} /> {tr('scanLab')}
-          </Button>
-          <Button variant="outline" onClick={() => void add('upload')}>
-            <FileUp size={18} /> {tr('uploadDoc')}
-          </Button>
+          {[
+            { kind: 'prescription' as const, icon: Camera, label: tr('scanRx') },
+            { kind: 'lab' as const, icon: FlaskConical, label: tr('scanLab') },
+            { kind: 'upload' as const, icon: FileUp, label: tr('uploadDoc') },
+          ].map((item) => (
+            <motion.div key={item.kind} whileHover={{ y: -3 }}>
+              <Button variant="outline" className="w-full" onClick={() => void add(item.kind)}>
+                <item.icon size={18} /> {item.label}
+              </Button>
+            </motion.div>
+          ))}
         </div>
         {stage ? (
           <Card>
             <p className="font-medium">{tr(stage)}</p>
-            <p className="text-sm text-muted">{tr('demoOcr')}</p>
+            <p className="mt-2 text-sm text-muted">{tr('demoOcr')}</p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="shimmer h-full w-2/3 rounded-full" />
+            </div>
           </Card>
         ) : null}
         {error ? <p className="text-red-700">{tr('ocrFail')}</p> : null}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AudioButton } from '../components/AudioButton'
 import { Button } from '../components/Button'
@@ -48,11 +49,17 @@ export function VerificationPage() {
           </div>
         ) : (
           <div className="grid gap-3">
-            <SummaryCard title={tr('chiefComplaint')}>{form.chiefComplaint}</SummaryCard>
-            <SummaryCard title={tr('duration')}>{form.duration}</SummaryCard>
-            <SummaryCard title={tr('pattern')}>{form.pattern}</SummaryCard>
-            <SummaryCard title={tr('associated')}>{form.associatedSymptoms}</SummaryCard>
-            <SummaryCard title={tr('medicalHistory')}>{form.pastHistory}</SummaryCard>
+            {[
+              [tr('chiefComplaint'), form.chiefComplaint],
+              [tr('duration'), form.duration],
+              [tr('pattern'), form.pattern],
+              [tr('associated'), form.associatedSymptoms],
+              [tr('medicalHistory'), form.pastHistory],
+            ].map(([title, value], i) => (
+              <motion.div key={title} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <SummaryCard title={title}>{value}</SummaryCard>
+              </motion.div>
+            ))}
           </div>
         )}
         <div className="flex flex-col gap-3">

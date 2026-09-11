@@ -90,7 +90,7 @@ cd backend
 npm install
 npm start
 ```
-*The backend server will run on `http://localhost:5000` and automatically initialize MongoDB.*
+*The backend server will run on `http://localhost:5001` and automatically initialize MongoDB.*
 
 ### 2. Start the Frontend Development Server
 In a separate terminal window:

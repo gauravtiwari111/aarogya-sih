@@ -17,10 +17,15 @@ export function VoiceInput({ onResult }: { onResult: (text: string, demo: boolea
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <Button variant="primary" onClick={() => void start()} disabled={listening} aria-label={tr('speak')}>
-        <Mic size={18} />
-        {listening ? tr('listening') : tr('speak')}
-      </Button>
+      <div className="relative">
+        {listening ? (
+          <span className="absolute inset-0 rounded-2xl bg-primary/30" style={{ animation: 'pulse-ring 1.1s ease-out infinite' }} />
+        ) : null}
+        <Button variant="primary" onClick={() => void start()} disabled={listening} aria-label={tr('speak')}>
+          <Mic size={18} />
+          {listening ? tr('listening') : tr('speak')}
+        </Button>
+      </div>
       {listening ? <Waveform /> : null}
     </div>
   )
@@ -32,10 +37,9 @@ export function Waveform() {
       {Array.from({ length: 9 }).map((_, i) => (
         <span
           key={i}
-          className="w-1.5 rounded-full bg-primary"
+          className="wave-bar w-1.5 rounded-full bg-primary"
           style={{
-            height: `${10 + ((i * 7) % 24)}px`,
-            animation: 'pulse 0.9s ease-in-out infinite',
+            height: `${14 + ((i * 7) % 22)}px`,
             animationDelay: `${i * 80}ms`,
           }}
         />

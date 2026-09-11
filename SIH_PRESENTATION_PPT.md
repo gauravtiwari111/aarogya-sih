@@ -14,7 +14,7 @@
 * **Target Impact**: Primary Health Centres (PHCs), Super-Specialty OPDs, and Rural Telemedicine
 * **Live Prototype**:
   * **Frontend (Vite + React 19)**: `http://localhost:5173/`
-  * **Backend (Node.js + REST API)**: `http://localhost:5000/api`
+  * **Backend (Node.js + REST API)**: `http://localhost:5001/api`
   * **Cloud Database**: MongoDB Atlas Cluster0 (`aarogya`)
 
 ---

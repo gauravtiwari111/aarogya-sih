@@ -12,7 +12,7 @@ export function Select({ label, options, id, ...rest }: Props) {
       <span className="mb-1.5 block font-medium text-navy">{label}</span>
       <select
         id={selectId}
-        className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink outline-none focus:border-primary"
+        className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
         {...rest}
       >
         {options.map((opt) => (

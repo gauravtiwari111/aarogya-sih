@@ -14,7 +14,7 @@ export function Input({ label, error, id, className, ...rest }: Props) {
       <input
         id={inputId}
         className={cx(
-          'w-full rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink outline-none focus:border-primary',
+          'w-full rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15',
           error && 'border-red-600',
           className,
         )}

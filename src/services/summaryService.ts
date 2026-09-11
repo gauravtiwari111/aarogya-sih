@@ -31,7 +31,7 @@ export function historyFromAnswers(answers: ConversationAnswer[]): ClinicalHisto
   const isHighFever = /fever|temperature|chills/i.test(fullText)
   const isSevereCombined = isBreathless && isChestPain
 
-  let level: 'none' | 'mild' | 'moderate' | 'high' = isSevereCombined
+  let level: 'none' | 'mild' | 'high' = isSevereCombined
     ? 'high'
     : isChestPain || isBreathless
     ? 'mild'

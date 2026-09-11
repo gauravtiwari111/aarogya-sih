@@ -16,12 +16,13 @@ export function SummaryPage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(!session.history)
   const [editing, setEditing] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const history = session.history
 
   useEffect(() => {
     if (session.history) return
     let alive = true
-    void generateClinicalSummary(PRIMARY_PATIENT_ID, session.answers).then((sum) => {
+    void generateClinicalSummary(session.selectedPatientId || PRIMARY_PATIENT_ID, session.answers).then((sum) => {
       if (!alive) return
       setSession({ history: sum.history })
       setLoading(false)
@@ -34,7 +35,12 @@ export function SummaryPage() {
   if (loading || !history) {
     return (
       <PatientShell>
-        <Card className="mx-auto max-w-xl">{tr('preparingSummary')}</Card>
+        <Card className="mx-auto max-w-xl space-y-3">
+          <p className="font-medium">{tr('preparingSummary')}</p>
+          <div className="shimmer h-3 rounded-full" />
+          <div className="shimmer h-3 w-4/5 rounded-full" />
+          <div className="shimmer h-3 w-2/3 rounded-full" />
+        </Card>
       </PatientShell>
     )
   }
@@ -128,8 +134,10 @@ export function SummaryPage() {
             {tr('editInfo')}
           </Button>
           <Button
+            disabled={submitting}
             onClick={async () => {
               const currentId = session.selectedPatientId || `PTH${Math.floor(100000 + Math.random() * 900000)}`
+              setSubmitting(true)
               toast(tr('submitted'))
 
               // Build patient record for Doctor Queue
@@ -187,9 +195,10 @@ export function SummaryPage() {
 
               setSession({ step: 'doctor', selectedPatientId: currentId, submitted: true })
               navigate('/success')
+              setSubmitting(false)
             }}
           >
-            {tr('submitDoctor')}
+            {submitting ? tr('processing') : tr('submitDoctor')}
           </Button>
         </div>
       </div>
