@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { DocumentCard } from '../components/DocumentCard'
 import { Modal } from '../components/Modal'
@@ -14,6 +14,7 @@ import type { DocumentRecord, Patient } from '../types'
 
 export function DoctorPatientPage() {
   const { id = '' } = useParams()
+  const navigate = useNavigate()
   const { tr, session, setSession } = useApp()
   const [patient, setPatient] = useState<Patient | undefined>()
   const [doc, setDoc] = useState<DocumentRecord | null>(null)
@@ -24,7 +25,7 @@ export function DoctorPatientPage() {
         setPatient(undefined)
         return
       }
-      if ((id === session.selectedPatientId || id === PRIMARY_PATIENT_ID) && session.history) {
+      if (session.submitted && (id === session.selectedPatientId || id === PRIMARY_PATIENT_ID) && session.history) {
         setPatient({
           ...found,
           name: session.draft.name || found.name,
@@ -68,7 +69,7 @@ export function DoctorPatientPage() {
                 }
                 import('../services/patientService').then(({ removePatient }) => {
                   removePatient(patient.id)
-                  window.location.href = '/doctor'
+                  navigate('/doctor')
                 })
               }
             }}

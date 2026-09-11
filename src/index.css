@@ -19,6 +19,7 @@
 
 html {
   font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 html[data-font='small'] {
@@ -53,7 +54,10 @@ html[data-motion='reduce'] *::after {
 body {
   margin: 0;
   min-width: 320px;
-  background: var(--color-page);
+  background:
+    radial-gradient(1200px 500px at 8% -10%, rgba(15, 108, 122, 0.12), transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, rgba(56, 189, 248, 0.14), transparent 50%),
+    var(--color-page);
   color: var(--color-ink);
   font-family: var(--font-sans);
   overflow-x: hidden;
@@ -78,4 +82,71 @@ textarea {
 
 ::selection {
   background: #b9e3ea;
+}
+
+@keyframes float-blob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(12px, -18px, 0) scale(1.08);
+  }
+}
+
+@keyframes wave-bar {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.float-blob {
+  animation: float-blob 9s ease-in-out infinite;
+}
+
+.wave-bar {
+  transform-origin: bottom;
+  animation: wave-bar 0.9s ease-in-out infinite;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #e8f1f4 0%, #f7fbfc 45%, #e8f1f4 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(15, 108, 122, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 108, 122, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
 }

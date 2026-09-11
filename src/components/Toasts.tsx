@@ -10,10 +10,10 @@ export function Toasts() {
           <motion.button
             key={item.id}
             type="button"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="pointer-events-auto rounded-2xl bg-navy px-4 py-3 text-left text-white shadow-lg"
+            initial={{ opacity: 0, y: -8, x: 12 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, y: -8, x: 12 }}
+            className="pointer-events-auto rounded-2xl bg-navy/95 px-4 py-3 text-left text-white shadow-lg backdrop-blur"
             onClick={() => dismissToast(item.id)}
           >
             {item.message}

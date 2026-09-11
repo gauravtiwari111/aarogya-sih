@@ -3,6 +3,7 @@ import { CheckCircle2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { PageTransition } from '../components/PageTransition'
 import { useApp } from '../hooks/AppContext'
 
 export function SuccessPage() {
@@ -10,13 +11,18 @@ export function SuccessPage() {
   const { tr, session, resetSession } = useApp()
   const name = session.draft.name || 'Rahul Sharma'
   return (
-    <div className="flex min-h-svh items-center justify-center bg-page px-4">
-      <Card className="w-full max-w-lg text-center">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+    <PageTransition className="relative flex min-h-svh items-center justify-center overflow-hidden px-4">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="float-blob absolute top-10 left-10 h-32 w-32 rounded-full bg-emerald-200/50 blur-3xl" />
+        <div className="float-blob absolute right-8 bottom-16 h-40 w-40 rounded-full bg-teal-200/40 blur-3xl" style={{ animationDelay: '1s' }} />
+      </div>
+      <Card className="relative w-full max-w-lg text-center">
+        <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 220, damping: 16 }}>
           <CheckCircle2 className="mx-auto text-emerald-600" size={64} />
         </motion.div>
         <h1 className="mt-4 text-2xl font-bold text-navy">✓ {tr('saved')}</h1>
-        <dl className="mt-6 space-y-2 text-left bg-slate-50 p-4 rounded-2xl border border-line">
+        <p className="mt-2 text-sm text-muted">{tr('savedSub')}</p>
+        <dl className="mt-6 space-y-2 rounded-2xl border border-line bg-slate-50 p-4 text-left">
           <div className="flex justify-between gap-4">
             <dt className="text-muted">Patient Name</dt>
             <dd className="font-semibold text-navy">{name}</dd>
@@ -45,6 +51,6 @@ export function SuccessPage() {
           </Button>
         </div>
       </Card>
-    </div>
+    </PageTransition>
   )
 }

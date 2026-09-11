@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { StatusBadge } from './StatusBadge'
 import type { Patient } from '../types'
 import { Card } from './Card'
@@ -30,15 +31,15 @@ export function PatientQueue({
           value={query}
           onChange={(e) => onQuery(e.target.value)}
           placeholder={tr('searchPatients')}
-          className="w-full rounded-2xl border border-line bg-white px-4 py-3"
+          className="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
         />
       </label>
       {filtered.length === 0 ? (
         <Card className="text-muted">{tr('noPatients')}</Card>
       ) : (
         <ul className="space-y-3">
-          {filtered.map((p) => (
-            <li key={p.id}>
+          {filtered.map((p, i) => (
+            <motion.li key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-lg font-semibold text-navy">{p.name}</p>
@@ -52,7 +53,11 @@ export function PatientQueue({
                     <div className="mt-2">
                       <StatusBadge level={p.attention} label={p.attentionNote} />
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="mt-2">
+                      <StatusBadge level="none" label="" />
+                    </div>
+                  )}
                   <p className="mt-1 text-xs text-muted">
                     {tr('lastUpdated')}: {p.lastUpdated}
                   </p>
@@ -79,7 +84,7 @@ export function PatientQueue({
                   ) : null}
                 </div>
               </Card>
-            </li>
+            </motion.li>
           ))}
         </ul>
       )}

@@ -145,10 +145,25 @@ export async function getPatients(req, res, next) {
           duration: record?.duration || '1 day',
           attention: record?.attention?.level || 'none',
           attentionNote: record?.attention?.message || '',
-          lastUpdated: '06 Sep 2026',
-          history: record || DEFAULT_DEMO_PATIENTS[0].history,
-          documents: docs.length ? docs : DEFAULT_DEMO_PATIENTS[0].documents,
-          timeline: DEFAULT_DEMO_PATIENTS[0].timeline,
+          lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          history: record || {
+            chiefComplaint: 'General checkup',
+            duration: '1 day',
+            pattern: '',
+            associatedSymptoms: '',
+            hpi: '',
+            hpiDetails: { onset: '', location: '', character: '', duration: '', associated: '', aggravating: '', relieving: '' },
+            pastHistory: '',
+            familyHistory: '',
+            personalHistory: '',
+            reviewOfSystems: '',
+            medications: [],
+            allergies: '',
+            investigations: [],
+            attention: { level: 'none', message: '' },
+          },
+          documents: docs,
+          timeline: [],
         }
       })
     )
@@ -194,10 +209,10 @@ export async function getPatientById(req, res, next) {
       duration: record?.duration || '2 days',
       attention: record?.attention?.level || 'mild',
       attentionNote: record?.attention?.message || '',
-      lastUpdated: '06 Sep 2026',
+      lastUpdated: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       history: record || DEFAULT_DEMO_PATIENTS[0].history,
-      documents: docs.length ? docs : DEFAULT_DEMO_PATIENTS[0].documents,
-      timeline: DEFAULT_DEMO_PATIENTS[0].timeline,
+      documents: docs,
+      timeline: [],
     })
   } catch (error) {
     const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === req.params.id && !DELETED_DEMO_IDS.has(p.id))

@@ -1,5 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { MotionConfig } from 'framer-motion'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import { Toasts } from './components/Toasts'
 import { AppProvider, useApp } from './hooks/AppContext'
 import { RequireStep } from './hooks/RequireStep'
@@ -18,10 +18,12 @@ import { WelcomePage } from './pages/WelcomePage'
 
 function AnimatedApp() {
   const { a11y } = useApp()
+  const location = useLocation()
   return (
     <MotionConfig reducedMotion={a11y.reducedMotion ? 'always' : 'never'}>
       <Toasts />
-      <Routes>
+      <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         <Route path="/" element={<WelcomePage />} />
         <Route
           path="/consent"
@@ -79,6 +81,7 @@ function AnimatedApp() {
         <Route path="/success" element={<SuccessPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </AnimatePresence>
     </MotionConfig>
   )
 }

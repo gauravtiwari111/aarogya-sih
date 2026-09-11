@@ -19,11 +19,11 @@ const app = express()
 app.use(helmet({ crossOriginResourcePolicy: false }))
 app.use(
   cors({
-    origin: '*',
+    origin: process.env.CLIENT_URL || true,
     credentials: true,
   })
 )
-app.use(express.json())
+app.use(express.json({ limit: '2mb' }))
 app.use(express.urlencoded({ extended: true }))
 
 // Root Route & Healthcheck
@@ -35,6 +35,10 @@ app.get('/', (req, res) => {
   })
 })
 
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, timestamp: new Date().toISOString() })
+})
+
 // Mount REST API Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/patients', patientRoutes)
@@ -42,6 +46,10 @@ app.use('/api/conversations', conversationRoutes)
 app.use('/api/summary', summaryRoutes)
 app.use('/api/doctor', doctorRoutes)
 app.use('/api/documents', documentRoutes)
+
+app.use((req, res) => {
+  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` })
+})
 
 // Centralized Error Handler
 app.use(errorHandler)

@@ -26,16 +26,33 @@ export async function connectDB() {
     console.warn('Could not connect to specified MONGODB_URI:', error.message)
   }
 
-  // Attempt Mongo Memory Server asynchronously
-  try {
-    console.log('Initializing MongoDB Memory Server...')
-    mongoServer = await MongoMemoryServer.create()
-    const mongoUri = mongoServer.getUri()
-    const conn = await mongoose.connect(mongoUri)
-    console.log(`MongoDB Memory Server Connected: ${conn.connection.host}`)
-  } catch (err) {
-    console.warn('MongoDB Memory Server initialization skipped or pending:', err.message)
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      console.log(`Initializing MongoDB Memory Server (attempt ${attempt})...`)
+      mongoServer = await MongoMemoryServer.create({
+        instance: {
+          dbName: 'aarogya',
+          ip: '127.0.0.1',
+          port: 27050 + attempt,
+        },
+      })
+      const mongoUri = mongoServer.getUri()
+      const conn = await mongoose.connect(mongoUri)
+      console.log(`MongoDB Memory Server Connected: ${conn.connection.host}`)
+      return
+    } catch (err) {
+      console.warn(`MongoDB Memory Server attempt ${attempt} failed:`, err.message)
+      if (mongoServer) {
+        try {
+          await mongoServer.stop()
+        } catch {
+          // ignore cleanup errors
+        }
+        mongoServer = null
+      }
+    }
   }
+  console.warn('API will continue with in-memory demo fallbacks until MongoDB is available.')
 }
 
 export async function disconnectDB() {

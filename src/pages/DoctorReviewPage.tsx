@@ -1,27 +1,40 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Input } from '../components/Input'
-import { DEMO_PATIENTS, PRIMARY_PATIENT_ID } from '../data/demoData'
+import { DEMO_PATIENTS } from '../data/demoData'
 import { useApp } from '../hooks/AppContext'
+import { getPatient } from '../services/patientService'
 import { confirmClinicalHistory, updateClinicalSummary } from '../services/summaryService'
+import type { ClinicalHistory, Patient } from '../types'
 
 export function DoctorReviewPage() {
   const { tr, session, setSession, toast } = useApp()
   const navigate = useNavigate()
-  const patient = DEMO_PATIENTS.find((p) => p.id === session.selectedPatientId) ?? DEMO_PATIENTS[0]
-  const initial = session.selectedPatientId === PRIMARY_PATIENT_ID && session.history ? session.history : patient.history
-  const [form, setForm] = useState(initial)
+  const [patient, setPatient] = useState<Patient | undefined>()
+  const [form, setForm] = useState<ClinicalHistory | null>(null)
   const [editing, setEditing] = useState(false)
-  const [keepFlag, setKeepFlag] = useState(form.attention.level !== 'none')
+  const [keepFlag, setKeepFlag] = useState(true)
+
+  useEffect(() => {
+    const id = session.selectedPatientId || DEMO_PATIENTS[0].id
+    void getPatient(id).then((found) => {
+      const fallback = found ?? DEMO_PATIENTS[0]
+      setPatient(fallback)
+      const history = session.submitted && session.history && session.selectedPatientId === fallback.id ? session.history : fallback.history
+      setForm(history)
+      setKeepFlag(history.attention.level !== 'none')
+    })
+  }, [session.history, session.selectedPatientId, session.submitted])
 
   const name = useMemo(() => {
-    if (session.selectedPatientId === PRIMARY_PATIENT_ID && session.draft.name) return session.draft.name
-    return patient.name
-  }, [patient.name, session.draft.name, session.selectedPatientId])
+    if (session.draft.name && patient?.id === session.selectedPatientId) return session.draft.name
+    return patient?.name ?? ''
+  }, [patient?.id, patient?.name, session.draft.name, session.selectedPatientId])
 
   async function save() {
+    if (!form || !patient) return
     const history = {
       ...form,
       attention: keepFlag ? form.attention : { level: 'none' as const, message: '' },
@@ -35,7 +48,11 @@ export function DoctorReviewPage() {
     })
     setSession({ history, verified: true, step: 'doctor' })
     toast(tr('reviewSaved'))
-    navigate('/success')
+    navigate('/doctor')
+  }
+
+  if (!form || !patient) {
+    return <Card>{tr('processing')}</Card>
   }
 
   return (
@@ -45,6 +62,7 @@ export function DoctorReviewPage() {
       <Card>
         <p className="text-sm text-muted">{tr('patient')}</p>
         <p className="text-xl font-semibold">{name}</p>
+        <p className="text-sm text-muted">{patient.id}</p>
       </Card>
       {editing ? (
         <div className="space-y-3">
@@ -52,7 +70,7 @@ export function DoctorReviewPage() {
           <label className="block">
             <span className="mb-1.5 block font-medium">{tr('hpi')}</span>
             <textarea
-              className="w-full rounded-2xl border border-line p-3"
+              className="w-full rounded-2xl border border-line p-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/15"
               rows={4}
               value={form.hpi}
               onChange={(e) => setForm({ ...form, hpi: e.target.value })}

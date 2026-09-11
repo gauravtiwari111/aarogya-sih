@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion'
+
 export function ProgressIndicator({ current, total, label }: { current: number; total: number; label: string }) {
   const pct = Math.round((current / total) * 100)
   return (
@@ -8,8 +10,13 @@ export function ProgressIndicator({ current, total, label }: { current: number; 
           {current} / {total}
         </span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      <div className="h-2.5 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+        <motion.div
+          className="h-full rounded-full bg-gradient-to-r from-primary to-teal-400"
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+        />
       </div>
     </div>
   )

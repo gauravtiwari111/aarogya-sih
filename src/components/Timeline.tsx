@@ -9,11 +9,12 @@ export function Timeline({ events }: { events: TimelineEvent[] }) {
       {events.map((event, i) => (
         <motion.li
           key={event.id}
+          className="relative"
           initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.08 }}
         >
-          <span className="absolute -left-[9px] mt-2 h-4 w-4 rounded-full border-2 border-white bg-primary" />
+          <span className="absolute -left-[31px] mt-2 h-4 w-4 rounded-full border-2 border-white bg-primary shadow-sm" />
           <Card className="p-4">
             <p className="text-sm text-muted">{event.date}</p>
             <p className="font-semibold text-navy">{event.title}</p>

@@ -1,5 +1,5 @@
 /** Central place for API base URL and helper methods. */
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 
 export const api = {
   baseUrl: API_BASE_URL,
@@ -31,12 +31,14 @@ export async function fetchJson<T>(endpoint: string, options: RequestInit = {}):
 
   if (!response.ok) {
     const errorText = await response.text()
+    let message = `HTTP ${response.status}: ${response.statusText}`
     try {
-      const errorJson = JSON.parse(errorText)
-      throw new Error(errorJson.message || 'API Request failed')
+      const errorJson = JSON.parse(errorText) as { message?: string }
+      message = errorJson.message || message
     } catch {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      if (errorText) message = errorText
     }
+    throw new Error(message)
   }
 
   return response.json()
