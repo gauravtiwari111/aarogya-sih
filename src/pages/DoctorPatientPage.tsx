@@ -7,7 +7,7 @@ import { SectionCard } from '../components/SectionCard'
 import { StatusBadge } from '../components/StatusBadge'
 import { SummaryCard } from '../components/SummaryCard'
 import { Timeline } from '../components/Timeline'
-import { DEMO_PATIENTS, PRIMARY_PATIENT_ID } from '../data/demoData'
+import { PRIMARY_PATIENT_ID } from '../data/demoData'
 import { useApp } from '../hooks/AppContext'
 import { getPatient } from '../services/patientService'
 import type { DocumentRecord, Patient } from '../types'
@@ -20,27 +20,26 @@ export function DoctorPatientPage() {
 
   useEffect(() => {
     void getPatient(id).then((found) => {
-      const base = found ?? DEMO_PATIENTS.find((p) => p.id === id)
-      if (!base) {
+      if (!found) {
         setPatient(undefined)
         return
       }
       if ((id === session.selectedPatientId || id === PRIMARY_PATIENT_ID) && session.history) {
         setPatient({
-          ...base,
-          name: session.draft.name || base.name,
-          age: Number(session.draft.age) || base.age,
-          gender: session.draft.gender || base.gender,
+          ...found,
+          name: session.draft.name || found.name,
+          age: Number(session.draft.age) || found.age,
+          gender: session.draft.gender || found.gender,
           history: session.history,
-          documents: session.documents.length ? session.documents : base.documents,
-          timeline: session.timeline.length ? session.timeline : base.timeline,
+          documents: session.documents.length ? session.documents : found.documents,
+          timeline: session.timeline.length ? session.timeline : found.timeline,
           attention: session.history.attention.level,
           attentionNote: session.history.attention.message,
           chiefComplaint: session.history.chiefComplaint,
           duration: session.history.duration,
         })
       } else {
-        setPatient(base)
+        setPatient(found)
       }
     })
   }, [id, session])
@@ -64,6 +63,9 @@ export function DoctorPatientPage() {
           <button
             onClick={() => {
               if (confirm(`Are you sure you want to permanently delete patient ${patient.name} (${patient.id})?`)) {
+                if (session.selectedPatientId === patient.id) {
+                  setSession({ selectedPatientId: '' })
+                }
                 import('../services/patientService').then(({ removePatient }) => {
                   removePatient(patient.id)
                   window.location.href = '/doctor'

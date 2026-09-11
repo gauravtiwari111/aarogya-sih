@@ -3,11 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { PatientQueue } from '../components/PatientQueue'
 import { useApp } from '../hooks/AppContext'
-import { getPatients, removePatient } from '../services/patientService'
+import { getDeletedPatientIds, getPatients, removePatient } from '../services/patientService'
 import type { Patient } from '../types'
 
 export function DoctorDashboardPage() {
-  const { tr, session, toast } = useApp()
+  const { tr, session, setSession, toast } = useApp()
   const [params] = useSearchParams()
   const view = params.get('view') ?? 'dashboard'
   const [query, setQuery] = useState('')
@@ -21,12 +21,16 @@ export function DoctorDashboardPage() {
 
   function handleDelete(patientId: string) {
     removePatient(patientId)
+    if (session.selectedPatientId === patientId) {
+      setSession({ selectedPatientId: '' })
+    }
     setPatients((prev) => prev.filter((p) => p.id !== patientId))
     toast(`Patient ${patientId} deleted permanently from queue`)
   }
 
   const merged = useMemo(() => {
     const activeId = session.selectedPatientId
+    const deletedSet = new Set(getDeletedPatientIds())
 
     // Map existing patient records
     const list = patients.map((p) => {
@@ -48,8 +52,8 @@ export function DoctorDashboardPage() {
       }
     })
 
-    // If active session patient is new and not in array yet, unshift them to top of queue
-    if (activeId && !list.some((p) => p.id === activeId) && session.history) {
+    // If active session patient is new and not in array yet, unshift them to top of queue (unless deleted)
+    if (activeId && !deletedSet.has(activeId) && !list.some((p) => p.id === activeId) && session.history) {
       list.unshift({
         id: activeId,
         name: session.draft.name || 'New Patient Intake',
@@ -68,7 +72,7 @@ export function DoctorDashboardPage() {
       })
     }
 
-    return list
+    return list.filter((p) => !deletedSet.has(p.id))
   }, [patients, session])
 
   if (view === 'settings') {
@@ -85,3 +89,4 @@ export function DoctorDashboardPage() {
     </div>
   )
 }
+

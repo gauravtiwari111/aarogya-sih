@@ -4,6 +4,8 @@ import { ClinicalRecord } from '../models/ClinicalRecord.js'
 import { Document } from '../models/Document.js'
 
 // Pre-seeded SIH Demo Patients
+const DELETED_DEMO_IDS = new Set()
+
 const DEFAULT_DEMO_PATIENTS = [
   {
     id: 'PTH100125',
@@ -119,12 +121,12 @@ const DEFAULT_DEMO_PATIENTS = [
 export async function getPatients(req, res, next) {
   try {
     if (mongoose.connection.readyState !== 1) {
-      return res.json(DEFAULT_DEMO_PATIENTS)
+      return res.json(DEFAULT_DEMO_PATIENTS.filter((p) => !DELETED_DEMO_IDS.has(p.id)))
     }
 
     const dbProfiles = await PatientProfile.find().lean()
     if (dbProfiles.length === 0) {
-      return res.json(DEFAULT_DEMO_PATIENTS)
+      return res.json(DEFAULT_DEMO_PATIENTS.filter((p) => !DELETED_DEMO_IDS.has(p.id)))
     }
 
     const patients = await Promise.all(
@@ -151,25 +153,30 @@ export async function getPatients(req, res, next) {
       })
     )
 
-    res.json(patients)
+    res.json(patients.filter((p) => !DELETED_DEMO_IDS.has(p.id)))
   } catch (error) {
-    res.json(DEFAULT_DEMO_PATIENTS)
+    res.json(DEFAULT_DEMO_PATIENTS.filter((p) => !DELETED_DEMO_IDS.has(p.id)))
   }
 }
 
 export async function getPatientById(req, res, next) {
   try {
     const { id } = req.params
+    if (DELETED_DEMO_IDS.has(id)) {
+      return res.status(404).json({ message: 'Patient not found' })
+    }
 
     if (mongoose.connection.readyState !== 1) {
-      const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === id) || DEFAULT_DEMO_PATIENTS[0]
+      const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === id && !DELETED_DEMO_IDS.has(p.id))
+      if (!demo) return res.status(404).json({ message: 'Patient not found' })
       return res.json(demo)
     }
 
     const profile = await PatientProfile.findOne({ patientId: id }).lean()
 
     if (!profile) {
-      const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === id) || DEFAULT_DEMO_PATIENTS[0]
+      const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === id && !DELETED_DEMO_IDS.has(p.id))
+      if (!demo) return res.status(404).json({ message: 'Patient not found' })
       return res.json(demo)
     }
 
@@ -193,7 +200,8 @@ export async function getPatientById(req, res, next) {
       timeline: DEFAULT_DEMO_PATIENTS[0].timeline,
     })
   } catch (error) {
-    const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === req.params.id) || DEFAULT_DEMO_PATIENTS[0]
+    const demo = DEFAULT_DEMO_PATIENTS.find((p) => p.id === req.params.id && !DELETED_DEMO_IDS.has(p.id))
+    if (!demo) return res.status(404).json({ message: 'Patient not found' })
     res.json(demo)
   }
 }
@@ -251,6 +259,7 @@ export async function updatePatientProfile(req, res, next) {
 export async function deletePatient(req, res, next) {
   try {
     const { id } = req.params
+    DELETED_DEMO_IDS.add(id)
     if (mongoose.connection.readyState === 1) {
       await PatientProfile.deleteOne({ patientId: id })
       await ClinicalRecord.deleteOne({ patientId: id })
@@ -261,4 +270,5 @@ export async function deletePatient(req, res, next) {
     res.status(500).json({ message: 'Error deleting patient' })
   }
 }
+
 
