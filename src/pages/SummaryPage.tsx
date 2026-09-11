@@ -132,7 +132,41 @@ export function SummaryPage() {
               const currentId = session.selectedPatientId || `PTH${Math.floor(100000 + Math.random() * 900000)}`
               toast(tr('submitted'))
 
-              // Save to backend database under patient's ID
+              // Build patient record for Doctor Queue
+              const fullRecord = {
+                id: currentId,
+                name,
+                age: Number(age) || 30,
+                gender: (gender as any) || 'male',
+                phone: session.draft.phone || '9876543210',
+                abhaId: session.draft.abhaId || `ABHA-${currentId.replace(/\D/g, '')}`,
+                chiefComplaint: history.chiefComplaint,
+                duration: history.duration,
+                attention: history.attention.level,
+                attentionNote: history.attention.message,
+                lastUpdated: 'Just now',
+                history: history,
+                documents: session.documents,
+                timeline: [
+                  ...session.timeline,
+                  {
+                    id: `tl-sub-${Date.now()}`,
+                    date: 'Today',
+                    title: 'Intake Submitted',
+                    subtitle: history.chiefComplaint,
+                    kind: 'complaint' as const,
+                  },
+                ],
+              }
+
+              try {
+                const { saveSubmittedPatient } = await import('../services/patientService')
+                saveSubmittedPatient(fullRecord)
+              } catch (e) {
+                console.warn('Local queue save note:', e)
+              }
+
+              // Save to backend REST API database
               try {
                 const { fetchJson } = await import('../services/api')
                 await fetchJson('/patients/profile', {

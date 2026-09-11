@@ -25,7 +25,7 @@ export function DoctorPatientPage() {
         setPatient(undefined)
         return
       }
-      if (id === PRIMARY_PATIENT_ID && session.history) {
+      if ((id === session.selectedPatientId || id === PRIMARY_PATIENT_ID) && session.history) {
         setPatient({
           ...base,
           name: session.draft.name || base.name,

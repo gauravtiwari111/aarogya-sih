@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { PatientQueue } from '../components/PatientQueue'
-import { DEMO_PATIENTS, PRIMARY_PATIENT_ID } from '../data/demoData'
 import { useApp } from '../hooks/AppContext'
 import { getPatients } from '../services/patientService'
 import type { Patient } from '../types'
@@ -12,18 +11,20 @@ export function DoctorDashboardPage() {
   const [params] = useSearchParams()
   const view = params.get('view') ?? 'dashboard'
   const [query, setQuery] = useState('')
-  const [patients, setPatients] = useState<Patient[]>(DEMO_PATIENTS)
+  const [patients, setPatients] = useState<Patient[]>([])
 
   useEffect(() => {
-    void getPatients().then(setPatients)
+    void getPatients().then((list) => {
+      setPatients(list)
+    })
   }, [])
 
   const merged = useMemo(() => {
-    const activeId = session.selectedPatientId || PRIMARY_PATIENT_ID
+    const activeId = session.selectedPatientId
 
     // Map existing patient records
     const list = patients.map((p) => {
-      if (p.id !== activeId || !session.history) return p
+      if (!activeId || p.id !== activeId || !session.history) return p
       return {
         ...p,
         name: session.draft.name || p.name,
@@ -41,12 +42,11 @@ export function DoctorDashboardPage() {
       }
     })
 
-    // If active session patient is new and not in DB array yet, append them to queue
-    const exists = list.some((p) => p.id === activeId)
-    if (!exists && session.history) {
+    // If active session patient is new and not in array yet, unshift them to top of queue
+    if (activeId && !list.some((p) => p.id === activeId) && session.history) {
       list.unshift({
         id: activeId,
-        name: session.draft.name || 'New Patient',
+        name: session.draft.name || 'New Patient Intake',
         age: Number(session.draft.age) || 30,
         gender: (session.draft.gender as any) || 'male',
         phone: session.draft.phone || '9876543210',

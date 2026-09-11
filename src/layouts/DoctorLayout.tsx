@@ -14,7 +14,7 @@ const items = [
   { to: '/doctor?view=settings', view: 'settings', icon: Settings, key: 'settings' as const },
 ]
 
-export function DoctorSidebar() {
+export function DoctorSidebar({ doctorName }: { doctorName?: string }) {
   const { tr } = useApp()
   const [params] = useSearchParams()
   const view = params.get('view') ?? 'dashboard'
@@ -39,9 +39,9 @@ export function DoctorSidebar() {
           </Link>
         ))}
       </nav>
-      <div className="mt-auto hidden border-t border-line p-4 md:block">
-        <p className="font-semibold">{tr('doctorProfile')}</p>
-        <p className="text-sm text-muted">{tr('doctorRole')}</p>
+      <div className="mt-auto hidden border-t border-line p-4 md:block bg-teal-50/50">
+        <p className="font-semibold text-teal-950">👨‍⚕️ {doctorName || 'Dr. V. K. Mehta'}</p>
+        <p className="text-xs text-teal-700">Senior OPD Cardiologist</p>
       </div>
     </aside>
   )
@@ -163,7 +163,7 @@ export function DoctorLayout() {
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-100 md:flex-row">
-      <DoctorSidebar />
+      <DoctorSidebar doctorName={doctorUser.name} />
       <div className="min-w-0 flex-1">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-4 py-3">
           <div>
