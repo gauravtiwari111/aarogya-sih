@@ -248,3 +248,17 @@ export async function updatePatientProfile(req, res, next) {
   }
 }
 
+export async function deletePatient(req, res, next) {
+  try {
+    const { id } = req.params
+    if (mongoose.connection.readyState === 1) {
+      await PatientProfile.deleteOne({ patientId: id })
+      await ClinicalRecord.deleteOne({ patientId: id })
+      await Document.deleteMany({ patientId: id })
+    }
+    res.json({ success: true, message: `Patient ${id} deleted successfully` })
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting patient' })
+  }
+}
+

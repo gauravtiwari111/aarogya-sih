@@ -3,15 +3,18 @@ import { StatusBadge } from './StatusBadge'
 import type { Patient } from '../types'
 import { Card } from './Card'
 import { useApp } from '../hooks/AppContext'
+import { Trash2 } from 'lucide-react'
 
 export function PatientQueue({
   patients,
   query,
   onQuery,
+  onDeletePatient,
 }: {
   patients: Patient[]
   query: string
   onQuery: (value: string) => void
+  onDeletePatient?: (id: string) => void
 }) {
   const { tr } = useApp()
   const filtered = patients.filter((p) => {
@@ -42,22 +45,39 @@ export function PatientQueue({
                   <p className="text-sm text-muted">
                     {p.age} {p.gender === 'male' ? 'M' : p.gender === 'female' ? 'F' : 'O'} · {p.id}
                   </p>
-                  <p>
+                  <p className="font-medium text-slate-800">
                     {p.chiefComplaint} · {p.duration}
                   </p>
-                  <div className="mt-2">
-                    <StatusBadge level={p.attention} label={p.attentionNote} />
-                  </div>
-                  <p className="mt-1 text-sm text-muted">
+                  {p.attentionNote ? (
+                    <div className="mt-2">
+                      <StatusBadge level={p.attention} label={p.attentionNote} />
+                    </div>
+                  ) : null}
+                  <p className="mt-1 text-xs text-muted">
                     {tr('lastUpdated')}: {p.lastUpdated}
                   </p>
                 </div>
-                <Link
-                  to={`/doctor/patient/${p.id}`}
-                  className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary px-5 font-semibold text-white"
-                >
-                  {tr('viewPatient')}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/doctor/patient/${p.id}`}
+                    className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary px-5 font-semibold text-white transition hover:bg-primary-dark"
+                  >
+                    {tr('viewPatient')}
+                  </Link>
+                  {onDeletePatient ? (
+                    <button
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to permanently delete patient ${p.name} (${p.id}) from the Queue?`)) {
+                          onDeletePatient(p.id)
+                        }
+                      }}
+                      title="Delete Patient Record"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 hover:text-red-700"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  ) : null}
+                </div>
               </Card>
             </li>
           ))}

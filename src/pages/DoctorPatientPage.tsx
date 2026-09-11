@@ -60,13 +60,28 @@ export function DoctorPatientPage() {
             {patient.age} • {patient.gender === 'male' ? 'Male' : patient.gender === 'female' ? 'Female' : 'Other'} • {patient.id}
           </p>
         </div>
-        <Link
-          to="/doctor/review"
-          className="inline-flex min-h-11 items-center rounded-2xl bg-primary px-5 font-semibold text-white"
-          onClick={() => setSession({ selectedPatientId: patient.id })}
-        >
-          {tr('review')}
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (confirm(`Are you sure you want to permanently delete patient ${patient.name} (${patient.id})?`)) {
+                import('../services/patientService').then(({ removePatient }) => {
+                  removePatient(patient.id)
+                  window.location.href = '/doctor'
+                })
+              }
+            }}
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-4 font-semibold text-red-700 transition hover:bg-red-100"
+          >
+            Delete Patient
+          </button>
+          <Link
+            to="/doctor/review"
+            className="inline-flex min-h-11 items-center rounded-2xl bg-primary px-5 font-semibold text-white transition hover:bg-primary-dark"
+            onClick={() => setSession({ selectedPatientId: patient.id })}
+          >
+            {tr('review')}
+          </Link>
+        </div>
       </div>
       <StatusBadge level={patient.attention} label={patient.attentionNote} />
       <div className="grid gap-3 md:grid-cols-2">

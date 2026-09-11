@@ -3,11 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { PatientQueue } from '../components/PatientQueue'
 import { useApp } from '../hooks/AppContext'
-import { getPatients } from '../services/patientService'
+import { getPatients, removePatient } from '../services/patientService'
 import type { Patient } from '../types'
 
 export function DoctorDashboardPage() {
-  const { tr, session } = useApp()
+  const { tr, session, toast } = useApp()
   const [params] = useSearchParams()
   const view = params.get('view') ?? 'dashboard'
   const [query, setQuery] = useState('')
@@ -18,6 +18,12 @@ export function DoctorDashboardPage() {
       setPatients(list)
     })
   }, [])
+
+  function handleDelete(patientId: string) {
+    removePatient(patientId)
+    setPatients((prev) => prev.filter((p) => p.id !== patientId))
+    toast(`Patient ${patientId} deleted permanently from queue`)
+  }
 
   const merged = useMemo(() => {
     const activeId = session.selectedPatientId
@@ -75,7 +81,7 @@ export function DoctorDashboardPage() {
   return (
     <div>
       <h2 className="mb-4 text-2xl font-bold text-navy">{tr('queue')}</h2>
-      <PatientQueue patients={merged} query={query} onQuery={setQuery} />
+      <PatientQueue patients={merged} query={query} onQuery={setQuery} onDeletePatient={handleDelete} />
     </div>
   )
 }

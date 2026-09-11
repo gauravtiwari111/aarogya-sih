@@ -8,17 +8,46 @@ function byId(id: string, answers: ConversationAnswer[]): string {
 
 export function historyFromAnswers(answers: ConversationAnswer[]): ClinicalHistory {
   const base = DEMO_PATIENTS.find((p) => p.id === PRIMARY_PATIENT_ID)!.history
-  const complaint = byId('q1', answers) || base.chiefComplaint
-  const duration = byId('q2', answers) || base.duration
-  const location = byId('q3', answers) || base.hpiDetails.location
-  const pattern = byId('q4', answers) || base.pattern
-  const associated = byId('q5', answers) || base.associatedSymptoms
-  const aggravating = byId('q6', answers) || base.hpiDetails.aggravating
-  const relieving = byId('q7', answers) || base.hpiDetails.relieving
-  const past = byId('q8', answers) || base.pastHistory
+  
+  const rawComplaint = byId('q1', answers) || answers[0]?.value || ''
+  const complaint = rawComplaint.trim() !== '' ? rawComplaint.trim() : 'General Medical Consultation'
+
+  const rawDuration = byId('q2', answers) || answers[1]?.value || ''
+  const duration = rawDuration.trim() !== '' ? rawDuration.trim() : '1 day'
+
+  const location = byId('q3', answers) || 'General'
+  const pattern = byId('q4', answers) || 'Intermittent'
+  const associated = byId('q5', answers) || 'None reported'
+  const aggravating = byId('q6', answers) || 'None reported'
+  const relieving = byId('q7', answers) || 'Rest'
+  const past = byId('q8', answers) || 'No past history reported'
   const med = byId('q9', answers)
-  const allergies = byId('q10', answers) || base.allergies
-  const breathy = /breath/i.test(associated)
+  const allergies = byId('q10', answers) || 'No known drug allergies (NKDA)'
+
+  // Dynamic Rule Assessment based on actual text
+  const fullText = `${complaint} ${associated} ${location}`.toLowerCase()
+  const isBreathless = /breath|dyspnea|gasping/i.test(fullText)
+  const isChestPain = /chest|substernal|angina|heart/i.test(fullText)
+  const isHighFever = /fever|temperature|chills/i.test(fullText)
+  const isSevereCombined = isBreathless && isChestPain
+
+  let level: 'none' | 'mild' | 'moderate' | 'high' = isSevereCombined
+    ? 'high'
+    : isChestPain || isBreathless
+    ? 'mild'
+    : isHighFever
+    ? 'mild'
+    : 'none'
+
+  let message = isSevereCombined
+    ? 'High Priority: Combined chest pain and shortness of breath reported.'
+    : isChestPain
+    ? 'Attention Required: Localized chest pain reported.'
+    : isBreathless
+    ? 'Attention Required: Shortness of breath reported.'
+    : isHighFever
+    ? 'Mild Concern: High fever reported.'
+    : ''
 
   return {
     ...base,
@@ -28,22 +57,20 @@ export function historyFromAnswers(answers: ConversationAnswer[]): ClinicalHisto
     associatedSymptoms: associated,
     pastHistory: past,
     allergies,
-    medications: med && med !== 'None reported'
-      ? [{ name: med, dosage: '', frequency: '' }]
-      : base.medications,
-    hpi: `${pattern} ${location.toLowerCase()} ${complaint.toLowerCase()} with ${associated.toLowerCase()}.`.replace(/\s+/g, ' '),
+    medications: med && med !== 'None reported' && med !== 'None'
+      ? [{ name: med, dosage: 'Standard', frequency: 'As prescribed' }]
+      : [],
+    hpi: `Patient presents with ${complaint.toLowerCase()} over ${duration}. Associated symptoms: ${associated.toLowerCase()}.`.replace(/\s+/g, ' '),
     hpiDetails: {
       onset: duration,
       location,
-      character: 'Pain/discomfort',
+      character: 'Symptom discomfort',
       duration: pattern,
       associated,
       aggravating,
       relieving,
     },
-    attention: breathy
-      ? { level: 'mild', message: 'Breathlessness reported with chest pain.' }
-      : { level: 'none', message: '' },
+    attention: { level, message },
   }
 }
 
@@ -90,4 +117,3 @@ export async function confirmClinicalHistory(review: DoctorReview): Promise<Doct
     return { ...review, accepted: true, verifiedAt: '06 Sep 2026' }
   }
 }
-

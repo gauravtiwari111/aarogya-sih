@@ -7,15 +7,21 @@
 export async function evaluateClinicalAssessment(answers = []) {
   const byId = (id) => answers.find((a) => a.questionId === id)?.value || ''
 
-  const complaint = byId('q1') || 'Chest discomfort and shortness of breath'
-  const duration = byId('q2') || '2 days'
-  const location = byId('q3') || 'Substernal chest region'
-  const pattern = byId('q4') || 'Intermittent / Exertional'
-  const associated = byId('q5') || 'Shortness of breath on mild exertion'
-  const aggravating = byId('q6') || 'Climbing stairs or physical stress'
+  // Dynamically extract complaint and duration from answers array without hardcoded defaults
+  const firstAnswerText = answers[0]?.value || ''
+  const rawComplaint = byId('q1') || firstAnswerText
+  const complaint = rawComplaint.trim() !== '' ? rawComplaint.trim() : 'General Medical Checkup'
+
+  const rawDuration = byId('q2') || (answers[1]?.value ?? '')
+  const duration = rawDuration.trim() !== '' ? rawDuration.trim() : '1 day'
+
+  const location = byId('q3') || 'Not specified'
+  const pattern = byId('q4') || 'Intermittent'
+  const associated = byId('q5') || 'None reported'
+  const aggravating = byId('q6') || 'None reported'
   const relieving = byId('q7') || 'Rest'
-  const past = byId('q8') || 'Hypertension (3 years)'
-  const med = byId('q9') || 'Amlodipine 5mg OD'
+  const past = byId('q8') || 'No significant past medical history'
+  const med = byId('q9') || 'None reported'
   const allergies = byId('q10') || 'No known drug allergies (NKDA)'
 
   let geminiAssessment = null
@@ -61,31 +67,45 @@ Respond ONLY with valid JSON in this exact structure:
           geminiAssessment = JSON.parse(jsonMatch[0])
           console.log('✅ Gemini AI Clinical Synthesis Result:', geminiAssessment)
         }
-      } else {
-        console.warn('Gemini API call returned status:', response.status)
       }
     } catch (err) {
       console.warn('Gemini API query error, using clinical rules fallback:', err.message)
     }
   }
 
-  // Check for critical symptoms / red flags (Rules Engine Fallback)
-  const isBreathless = /breath|dyspnea|gasping/i.test(associated) || /breath|dyspnea/i.test(complaint)
-  const isSevereChestPain = /chest|substernal|angina/i.test(location) || /chest|heart/i.test(complaint)
-  const isHighRisk = isBreathless && isSevereChestPain
+  // Dynamic Rule Engine Assessment based on ACTUAL symptoms
+  const fullSymptomText = `${complaint} ${associated} ${location}`.toLowerCase()
+  const isBreathless = /breath|dyspnea|gasping/i.test(fullSymptomText)
+  const isChestPain = /chest|substernal|angina|cardiac/i.test(fullSymptomText)
+  const isHighFever = /fever|temperature|chills/i.test(fullSymptomText)
+  const isSevereHigh = isBreathless && isChestPain
 
-  let riskLevel = geminiAssessment?.riskLevel || (isHighRisk ? 'high' : isBreathless || isSevereChestPain ? 'moderate' : 'low')
-  let attentionLevel = riskLevel === 'high' ? 'high' : riskLevel === 'moderate' ? 'mild' : 'none'
-  let attentionMessage = geminiAssessment?.attentionMessage || (isHighRisk
-    ? 'High Priority Concern: Combined chest discomfort and shortness of breath reported with cardiac history risk.'
-    : isBreathless || isSevereChestPain
-    ? 'Mild Attention Required: Shortness of breath or localized chest pain noted.'
-    : '')
-  let redFlags = geminiAssessment?.redFlags || (isHighRisk
-    ? ['Chest pain with exertional dyspnea', 'Pre-existing hypertension']
-    : [isBreathless ? 'Shortness of breath reported' : 'Chest discomfort reported'])
+  let riskLevel = geminiAssessment?.riskLevel || (isSevereHigh ? 'high' : (isBreathless || isChestPain) ? 'moderate' : isHighFever ? 'mild' : 'low')
+  let attentionLevel = riskLevel === 'high' ? 'high' : riskLevel === 'moderate' ? 'mild' : riskLevel === 'mild' ? 'mild' : 'none'
+  
+  let attentionMessage = geminiAssessment?.attentionMessage || (
+    isSevereHigh
+      ? 'High Priority Concern: Combined chest discomfort and breathlessness reported.'
+      : isChestPain
+      ? 'Attention Required: Localized chest pain reported — evaluate cardiac history.'
+      : isBreathless
+      ? 'Attention Required: Shortness of breath reported.'
+      : isHighFever
+      ? 'Mild Concern: High fever symptoms reported.'
+      : ''
+  )
 
-  const hpiText = `${pattern} ${location.toLowerCase()} ${complaint.toLowerCase()} associated with ${associated.toLowerCase()}. Aggravated by ${aggravating.toLowerCase()} and relieved by ${relieving.toLowerCase()}.`.replace(/\s+/g, ' ')
+  let redFlags = geminiAssessment?.redFlags || (
+    isSevereHigh
+      ? ['Chest discomfort with exertional dyspnea']
+      : isChestPain
+      ? ['Chest discomfort reported']
+      : isBreathless
+      ? ['Shortness of breath reported']
+      : []
+  )
+
+  const hpiText = `Patient presents with ${complaint.toLowerCase()} lasting ${duration}. Associated symptoms include ${associated.toLowerCase()}.`.replace(/\s+/g, ' ')
 
   const clinicalHistory = {
     chiefComplaint: complaint,
@@ -96,34 +116,19 @@ Respond ONLY with valid JSON in this exact structure:
     hpiDetails: {
       onset: duration,
       location,
-      character: 'Pain/discomfort',
+      character: 'Symptom discomfort',
       duration: pattern,
       associated,
       aggravating,
       relieving,
     },
     pastHistory: past,
-    familyHistory: 'No family history of premature CAD reported',
+    familyHistory: 'No relevant family history reported',
     personalHistory: 'Non-smoker, non-alcoholic',
-    reviewOfSystems: 'Cardiovascular & Respiratory evaluation recommended based on chief complaint',
-    medications: med && med !== 'None reported' ? [{ name: med, dosage: '5mg', frequency: 'OD' }] : [{ name: 'Amlodipine', dosage: '5mg', frequency: 'OD' }],
+    reviewOfSystems: `Evaluation recommended for ${complaint}`,
+    medications: med && med !== 'None reported' ? [{ name: med, dosage: 'Standard', frequency: 'As needed' }] : [],
     allergies,
-    investigations: [
-      {
-        name: 'Blood Pressure',
-        value: '138/88 mmHg',
-        reference: '< 120/80 mmHg',
-        status: 'above',
-        date: '06 Sep 2026',
-      },
-      {
-        name: 'HbA1c',
-        value: '5.8%',
-        reference: '< 5.7%',
-        status: 'above',
-        date: '06 Sep 2026',
-      },
-    ],
+    investigations: [],
     attention: {
       level: attentionLevel,
       message: attentionMessage,
@@ -132,12 +137,12 @@ Respond ONLY with valid JSON in this exact structure:
 
   const structuredAssessment = {
     riskLevel,
-    summary: geminiAssessment?.summaryText || `Preliminary AI clinical intake indicates ${complaint.toLowerCase()} over ${duration}. Associated symptoms include ${associated.toLowerCase()}.`,
+    summary: geminiAssessment?.summaryText || `Clinical intake assessment for ${complaint.toLowerCase()} over ${duration}.`,
     keySymptoms: [complaint, associated].filter(Boolean),
     redFlags,
-    recommendedAction: riskLevel === 'high' ? 'Immediate physician consultation and ECG evaluation recommended' : 'Routine physician review recommended',
+    recommendedAction: riskLevel === 'high' ? 'Immediate physician consultation recommended' : 'Routine physician review recommended',
     followUpRequired: true,
-    disclaimer: 'AI-generated preliminary intake assessment — Official doctor verification and clinical review required',
+    disclaimer: 'AI-generated preliminary intake assessment — Doctor review required',
   }
 
   return {

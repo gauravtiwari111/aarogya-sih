@@ -18,6 +18,17 @@ export function saveSubmittedPatient(patient: Patient) {
   localStorage.setItem('aarogya_submitted_patients', JSON.stringify(filtered))
 }
 
+export function removePatient(id: string) {
+  const existing = getLocalSubmittedPatients()
+  const filtered = existing.filter((p) => p.id !== id)
+  localStorage.setItem('aarogya_submitted_patients', JSON.stringify(filtered))
+
+  // Also remove from backend API if reachable
+  fetchJson(`/patients/${id}`, { method: 'DELETE' }).catch((err) => {
+    console.warn('Backend delete patient note:', err)
+  })
+}
+
 export async function getPatients(): Promise<Patient[]> {
   const localList = getLocalSubmittedPatients()
 
